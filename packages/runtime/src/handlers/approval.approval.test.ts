@@ -1223,6 +1223,50 @@ describe("ApprovalHandler: signing approval preview + unlocked-session gate", ()
     ).resolves.toBe(true);
   });
 
+  it("signMessage preview names the hash algorithm the signature will use", async () => {
+    const jwk = await generateJWK();
+    await cacheKey(WALLET_ID, jwk, "abc-address");
+    const message = new TextEncoder().encode("hello");
+
+    const pending = handler.requestApproval({
+      kind: "signMessage",
+      origin: "https://bazar.arweave.net",
+      walletId: WALLET_ID,
+      payload: message,
+      hashAlgorithm: "SHA-512",
+    });
+    pending.catch(() => {});
+    await vi.waitFor(() => expect(presenter.presented.length).toBe(1));
+    const requestId = presenter.presented[0]!;
+
+    const request = await handler.getApproval({ requestId });
+    if (request.preview.kind !== "signMessage") {
+      throw new Error("expected a signMessage preview");
+    }
+    expect(request.preview.hashAlgorithm).toBe("SHA-512");
+
+    await handler.resolveApproval({ requestId, approved: true });
+    await pending;
+
+    // No algorithm picked previews as the SHA-256 it will sign with.
+    const defaulted = handler.requestApproval({
+      kind: "signMessage",
+      origin: "https://bazar.arweave.net",
+      walletId: WALLET_ID,
+      payload: message,
+    });
+    defaulted.catch(() => {});
+    await vi.waitFor(() => expect(presenter.presented.length).toBe(2));
+    const defaultRequest = await handler.getApproval({ requestId: presenter.presented[1]! });
+    if (defaultRequest.preview.kind !== "signMessage") {
+      throw new Error("expected a signMessage preview");
+    }
+    expect(defaultRequest.preview.hashAlgorithm).toBe("SHA-256");
+
+    await handler.resolveApproval({ requestId: presenter.presented[1]!, approved: true });
+    await defaulted;
+  });
+
   async function approveCrypto(
     kind: "encrypt" | "decrypt",
     payload: Uint8Array,

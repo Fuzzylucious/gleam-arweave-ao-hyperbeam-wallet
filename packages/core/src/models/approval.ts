@@ -92,6 +92,14 @@ export interface SigningApprovalPreview {
   tags: Array<{ name: string; value: string }>;
   payloadHash: string;
   /**
+   * The digest `signMessage` signs with, as the site picked it —
+   * `"SHA-256"` when it picked none. Only set for `signMessage`:
+   * `payloadHash` above is always a SHA-256 of the payload, so without
+   * this a SHA-384/SHA-512 request previews identically to a SHA-256
+   * one while the signature scheme differs.
+   */
+  hashAlgorithm?: "SHA-256" | "SHA-384" | "SHA-512";
+  /**
    * Every item `signDataItem`/`batchSignDataItem` will sign, in order —
    * so a `batchSignDataItem` approval isn't just item 1's
    * `decodedData`/`tags`. `null` for every other kind.

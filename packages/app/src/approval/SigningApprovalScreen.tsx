@@ -149,6 +149,13 @@ export function SigningApprovalScreen({
           </div>
         ) : null}
 
+        {preview.hashAlgorithm !== undefined && preview.hashAlgorithm !== "SHA-256" ? (
+          <div className="flex items-center justify-between gap-4 text-label">
+            <span className="text-muted">{t("approval.hashAlgorithm")}</span>
+            <span className="text-right font-semibold tabular-nums text-foreground">{preview.hashAlgorithm}</span>
+          </div>
+        ) : null}
+
         {unreadable ? <RiskNotice>{t("transferReview.unreadableTokenTransfer")}</RiskNotice> : null}
 
         {preview.items ? (
