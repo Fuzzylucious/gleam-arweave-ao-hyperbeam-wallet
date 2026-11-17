@@ -470,6 +470,33 @@ describe("SigningApprovalScreen: requests that move nothing", () => {
     expect(screen.getByText("1048576 bytes")).toBeTruthy();
   });
 
+  it("shows an encrypt request's RSA-OAEP label and its hash", () => {
+    const labelHash = "ab".repeat(32);
+    renderScreen({
+      preview: { ...MESSAGE_PREVIEW, kind: "encrypt", encryptLabel: { text: "context:gleam-test", size: 18, hash: labelHash } },
+    });
+    expect(screen.getByText("Encryption label")).toBeTruthy();
+    expect(screen.getByText("context:gleam-test")).toBeTruthy();
+    expect(screen.getByText("Encryption label (SHA-256)")).toBeTruthy();
+    expect(screen.getByText(labelHash)).toBeTruthy();
+  });
+
+  it("shows the size and hash of an encryption label that isn't text", () => {
+    const labelHash = "cd".repeat(32);
+    renderScreen({
+      preview: { ...MESSAGE_PREVIEW, kind: "decrypt", encryptLabel: { text: null, size: 12, hash: labelHash } },
+    });
+    expect(screen.getByText("Encryption label")).toBeTruthy();
+    expect(screen.getByText("12 bytes")).toBeTruthy();
+    expect(screen.getByText(labelHash)).toBeTruthy();
+  });
+
+  it("shows no encryption label for a request that carries none", () => {
+    renderScreen({ preview: { ...MESSAGE_PREVIEW, kind: "encrypt" } });
+    expect(screen.queryByText("Encryption label")).toBeNull();
+    expect(screen.queryByText("Encryption label (SHA-256)")).toBeNull();
+  });
+
   describe("text longer than the preview holds", () => {
     const START = `${"A".repeat(4096)}…`;
     const WHOLE = `${"A".repeat(4096)}ZZ-the-end`;

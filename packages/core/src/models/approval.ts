@@ -92,6 +92,21 @@ export interface SigningApprovalPreview {
   tags: Array<{ name: string; value: string }>;
   payloadHash: string;
   /**
+   * The RSA-OAEP label an `encrypt`/`decrypt` request carries, represented
+   * the way the payload itself is: `text` is the label decoded as UTF-8
+   * (only its start, with `textTruncated`, when long), or `null` when it
+   * isn't valid text; `size` and `hash` (lowercase hex SHA-256) pin the
+   * exact bytes either way. The label binds the ciphertext — it decrypts
+   * only under the same label — so it is part of what the user approves.
+   * Absent when the request carries no label, and for every other kind.
+   */
+  encryptLabel?: {
+    text: string | null;
+    textTruncated?: true;
+    size: number;
+    hash: string;
+  } | null;
+  /**
    * Every item `signDataItem`/`batchSignDataItem` will sign, in order —
    * so a `batchSignDataItem` approval isn't just item 1's
    * `decodedData`/`tags`. `null` for every other kind.

@@ -6,6 +6,7 @@ import { useT, type MessageKey, type TFunction } from "../i18n";
 import { formatWinstonAsAr } from "../screens/main-screen/src/formatWinston";
 import { errorText } from "../i18n/errors";
 import { SignedDataText } from "./SignedDataText";
+import { UntrustedText } from "./UntrustedText";
 import { DataItemCard } from "../transfer-review/DataItemCard";
 import { TagTiers } from "../transfer-review/TagTiers";
 import { RequestHeader } from "../transfer-review/RequestHeader";
@@ -190,6 +191,29 @@ export function SigningApprovalScreen({
               </div>
             ) : null}
 
+            {preview.encryptLabel ? (
+              <>
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-caption font-semibold uppercase tracking-wide text-muted">{t("approval.encryptionLabel")}</span>
+                  {preview.encryptLabel.text !== null && preview.encryptLabel.text !== "" ? (
+                    <div className={`${DATA_BOX} max-h-24`}>
+                      <UntrustedText text={preview.encryptLabel.text} />
+                    </div>
+                  ) : null}
+                  {preview.encryptLabel.text === null || preview.encryptLabel.textTruncated ? (
+                    <span className="font-mono text-caption text-foreground">
+                      {t("approval.bytes", { size: String(preview.encryptLabel.size) })}
+                    </span>
+                  ) : null}
+                </div>
+
+                <AddrBlock
+                  label={t("approval.encryptionLabelHash")}
+                  copyLabel={t("approval.copyEncryptionLabelHash")}
+                  value={preview.encryptLabel.hash}
+                />
+              </>
+            ) : null}
 
             <AddrBlock
               label={t("approval.signingPayloadHash")}

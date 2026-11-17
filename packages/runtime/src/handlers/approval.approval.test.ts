@@ -1264,6 +1264,61 @@ describe("ApprovalHandler: signing approval preview + unlocked-session gate", ()
     expect(new TextDecoder().decode(decrypted)).toBe("secret");
   });
 
+  it("previews an encrypt request's RSA-OAEP label, and no label for an unlabelled request", async () => {
+    const jwk = await generateJWK();
+    await storeWallet(WALLET_ID, jwk.n);
+    await cacheKey(WALLET_ID, jwk, "abc-address");
+    const labelText = "context:gleam-test";
+    const label = new TextEncoder().encode(labelText);
+    const labelHash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", label)))
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
+
+    const labelled = handler.requestApproval({
+      kind: "encrypt",
+      origin: "https://bazar.arweave.net",
+      walletId: WALLET_ID,
+      payload: new TextEncoder().encode("secret"),
+      encryptAlgorithm: { name: "RSA-OAEP", label: label.buffer },
+    });
+    labelled.catch(() => {});
+    await vi.waitFor(() => expect(presenter.presented.length).toBeGreaterThan(0));
+    const labelledId = presenter.presented.pop()!;
+    const labelledRequest = await handler.getApproval({ requestId: labelledId });
+    if (
+      labelledRequest.preview.kind === "connect" ||
+      labelledRequest.preview.kind === "addToken" ||
+      labelledRequest.preview.kind === "scanAttestation"
+    ) {
+      throw new Error("expected a signing preview");
+    }
+    expect(labelledRequest.preview.encryptLabel).toEqual({ text: labelText, size: label.byteLength, hash: labelHash });
+    await handler.resolveApproval({ requestId: labelledId, approved: false });
+    await expect(labelled).rejects.toThrow();
+
+    const unlabelled = handler.requestApproval({
+      kind: "decrypt",
+      origin: "https://bazar.arweave.net",
+      walletId: WALLET_ID,
+      payload: new TextEncoder().encode("secret"),
+      encryptAlgorithm: { name: "RSA-OAEP" },
+    });
+    unlabelled.catch(() => {});
+    await vi.waitFor(() => expect(presenter.presented.length).toBeGreaterThan(0));
+    const unlabelledId = presenter.presented.pop()!;
+    const unlabelledRequest = await handler.getApproval({ requestId: unlabelledId });
+    if (
+      unlabelledRequest.preview.kind === "connect" ||
+      unlabelledRequest.preview.kind === "addToken" ||
+      unlabelledRequest.preview.kind === "scanAttestation"
+    ) {
+      throw new Error("expected a signing preview");
+    }
+    expect(unlabelledRequest.preview.encryptLabel).toBeUndefined();
+    await handler.resolveApproval({ requestId: unlabelledId, approved: false });
+    await expect(unlabelled).rejects.toThrow();
+  });
+
   it("encrypts to a hardware wallet's stored public key without a cached key", async () => {
     const deviceKey = await generateJWK();
     await storeWallet("hw-1", deviceKey.n, {

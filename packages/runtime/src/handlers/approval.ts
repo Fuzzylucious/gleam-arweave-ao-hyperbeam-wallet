@@ -757,6 +757,22 @@ function dataPreview(payload: Uint8Array): { decodedData: string | null; dataTru
   return { decodedData: `${text.slice(0, cut)}…`, dataTruncated: true };
 }
 
+/**
+ * The RSA-OAEP label an `encrypt`/`decrypt` request carries, previewed the
+ * way the payload is: its decoded text when it is text, and the byte count
+ * and SHA-256 of the exact bytes either way — a labelled request must not
+ * preview identically to an unlabelled one.
+ */
+async function encryptLabelPreview(label: Uint8Array): Promise<NonNullable<SigningApprovalPreview["encryptLabel"]>> {
+  const { decodedData, dataTruncated } = dataPreview(label);
+  return {
+    text: decodedData,
+    ...(dataTruncated ? { textTruncated: true as const } : {}),
+    size: label.byteLength,
+    hash: await sha256Hex(label),
+  };
+}
+
 async function sha256Hex(bytes: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", bytes as BufferSource);
   return Array.from(new Uint8Array(digest))
@@ -878,6 +894,9 @@ async function buildSigningPreview(input: SigningRequestInput): Promise<SigningA
     dataSize: input.payload.byteLength,
     tags: input.tags ?? [],
     payloadHash,
+    ...(input.encryptAlgorithm?.label
+      ? { encryptLabel: await encryptLabelPreview(new Uint8Array(input.encryptAlgorithm.label)) }
+      : {}),
     items: signedItems ? await buildDataItemPreviews(signedItems, input.itemTokenMetadata) : null,
   };
 }
