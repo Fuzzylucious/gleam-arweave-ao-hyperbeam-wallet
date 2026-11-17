@@ -102,6 +102,13 @@ export interface SigningApprovalPreview {
     dataTruncated?: true;
     tags: Array<{ name: string; value: string }>;
     target: string | null;
+    /**
+     * The item's ANS-104 anchor: 32 bytes the site chose, signed as part
+     * of the item, that a process can read and key behaviour off. `null`
+     * when the item carries none; shown so an anchored item never asks
+     * the user to sign bytes no approval surface displays.
+     */
+    anchor?: string | null;
     payloadHash: string;
     /** Set when the item is an AO `Transfer` message, read from its own target and tags. */
     transfer: DataItemTransferPreview | null;
@@ -240,6 +247,8 @@ export type DeviceSigningSummary =
       kind: "dataItem";
       target: string | null;
       dataSize: number;
+      /** The item's ANS-104 anchor, when it carries one; as the preview item's `anchor`. */
+      anchor?: string;
       /** As the preview item's `unreadableTokenTransfer`. */
       unreadableTokenTransfer?: boolean;
     }

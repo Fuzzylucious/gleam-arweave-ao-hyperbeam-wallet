@@ -84,7 +84,7 @@ export function summarize(payload: UnsignedPayload, collectibleId?: string | nul
       ...(tokenTransfer ? { unreadableTokenTransfer: true } : {}),
     };
   }
-  const { target, tags, data } = readDataItemFields(payload.raw);
+  const { target, anchor, tags, data } = readDataItemFields(payload.raw);
   const transfer = readAoTransferMessage({ target, tags });
   if (transfer?.kind === "transfer") {
     if (transfer.quantity === COLLECTIBLE_TRANSFER_QUANTITY && transfer.processId === collectibleId) {
@@ -96,6 +96,7 @@ export function summarize(payload: UnsignedPayload, collectibleId?: string | nul
     kind: "dataItem",
     target: target || null,
     dataSize: data.byteLength,
+    ...(anchor ? { anchor } : {}),
     ...(transfer ? { unreadableTokenTransfer: true } : {}),
   };
 }

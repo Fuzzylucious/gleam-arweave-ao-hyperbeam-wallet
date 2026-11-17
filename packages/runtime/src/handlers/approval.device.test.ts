@@ -333,6 +333,22 @@ describe("ApprovalHandler: hardware wallet requests wait for the device", () => 
     ]);
   });
 
+  it("summarizes an anchored data item with its anchor, and an unanchored one without", async () => {
+    const anchor = "a".repeat(32);
+    const { view } = await approveOnDevice({
+      kind: "batchSignDataItem",
+      payload: new TextEncoder().encode(" "),
+      dataItems: [
+        { data: btoa(" "), tags: [{ name: "Action", value: "Eval" }], target: PROCESS_ID, anchor },
+        { data: btoa(" "), tags: [{ name: "Action", value: "Eval" }], target: PROCESS_ID },
+      ],
+    });
+    expect(view.device!.summaries).toEqual([
+      { kind: "dataItem", target: PROCESS_ID, dataSize: 1, anchor },
+      { kind: "dataItem", target: PROCESS_ID, dataSize: 1 },
+    ]);
+  });
+
   it("summarizes an AO Transfer item of 1 as the collectible the preview named, and a transfer of more as the token", async () => {
     const tags = (quantity: string) => [
       { name: "Action", value: "Transfer" },

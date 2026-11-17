@@ -49,6 +49,8 @@ export interface SignedPart {
   dataTruncated?: true;
   /** Which data item this is; none for the request's own payload. */
   dataIndex?: number;
+  /** The data item's ANS-104 anchor, signed with it; `null` when it carries none, absent for a transaction. */
+  anchor?: string | null;
   /** `null` where nothing of the request's own is signed yet (a wallet send). */
   payloadHash: string | null;
 }
@@ -132,6 +134,7 @@ export function transferRequestFromPreview(preview: SigningApprovalPreview): Tra
         dataSize: item.dataSize,
         ...(item.dataTruncated ? { dataTruncated: true as const } : {}),
         dataIndex: index,
+        anchor: item.anchor ?? null,
         payloadHash: item.payloadHash,
       };
       if (item.transfer) {
