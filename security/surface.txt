@@ -157,6 +157,8 @@
 4 packages/ui/src/components/wallet/RecipientCard.tsx
 4 packages/ui/src/components/wallet/RecipientWarning.tsx
 4 packages/ui/src/components/wallet/MemorableAddress.tsx
+4 packages/ui/src/components/wallet/CollectibleThumbnail.tsx
+4 packages/ui/src/components/wallet/image-cache.ts
 4 packages/core/src/recipients/memorable-address.ts
 4 packages/core/src/pricing/impersonation.ts
 4 packages/core/src/models/tag.ts

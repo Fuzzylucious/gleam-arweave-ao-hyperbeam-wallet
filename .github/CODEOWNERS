@@ -153,6 +153,8 @@
 /packages/ui/src/components/wallet/RecipientCard.tsx                       @skyf0xx
 /packages/ui/src/components/wallet/RecipientWarning.tsx                    @skyf0xx
 /packages/ui/src/components/wallet/MemorableAddress.tsx                    @skyf0xx
+/packages/ui/src/components/wallet/CollectibleThumbnail.tsx                @skyf0xx
+/packages/ui/src/components/wallet/image-cache.ts                          @skyf0xx
 /packages/core/src/recipients/memorable-address.ts                         @skyf0xx
 /packages/core/src/pricing/impersonation.ts                                @skyf0xx
 /packages/core/src/models/tag.ts                                           @skyf0xx
